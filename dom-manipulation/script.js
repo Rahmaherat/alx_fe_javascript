@@ -15,7 +15,7 @@ function loadQuotes() {
     }
     populateCategories();
     restoreLastSelectedCategory();
-    fetchServerQuotes(); // Fetch initial quotes from the server
+    fetchQuotesFromServer(); // Fetch initial quotes from the server
 }
 
 // Function to save quotes to local storage
@@ -24,7 +24,7 @@ function saveQuotes() {
 }
 
 // Function to fetch quotes from the mock server
-async function fetchServerQuotes() {
+async function fetchQuotesFromServer() {
     try {
         const response = await fetch(mockServerUrl);
         const serverQuotes = await response.json();
@@ -69,7 +69,7 @@ function refreshQuoteDisplay() {
 }
 
 // Periodic fetch every 10 seconds
-setInterval(fetchServerQuotes, 10000);
+setInterval(fetchQuotesFromServer, 10000);
 
 // Populate categories dynamically in the dropdown
 function populateCategories() {
