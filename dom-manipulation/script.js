@@ -36,7 +36,6 @@ async function fetchQuotesFromServer() {
 
 // Handle quotes fetched from the server
 function handleServerQuotes(serverQuotes) {
-    // Simulate merging server data with local data
     const newQuotes = serverQuotes.map(item => ({
         text: item.title, // Using title for the quote text
         category: "General" // Using a default category
@@ -52,19 +51,18 @@ function handleServerQuotes(serverQuotes) {
         }
     });
 
-    // If the local quotes differ from server quotes, notify the user
     if (updatedQuotes.length !== quotes.length) {
         quotes = updatedQuotes;
         saveQuotes();
         alert("Quotes updated from server!");
-        refreshQuoteDisplay(); // Refresh display
+        refreshQuoteDisplay();
     }
 }
 
 // Refresh the quote display
 function refreshQuoteDisplay() {
     const quoteDisplay = document.getElementById("quoteDisplay");
-    quoteDisplay.innerHTML = ""; // Clear current quotes
+    quoteDisplay.innerHTML = "";
     quotes.forEach(quote => addQuoteToDOM(quote));
 }
 
@@ -76,7 +74,7 @@ function populateCategories() {
     const categoryFilter = document.getElementById("categoryFilter");
     const categories = new Set(quotes.map(quote => quote.category));
 
-    categoryFilter.innerHTML = ""; // Clear existing options
+    categoryFilter.innerHTML = "";
     const defaultOption = document.createElement("option");
     defaultOption.value = "all";
     defaultOption.textContent = "All Categories";
@@ -94,12 +92,11 @@ function populateCategories() {
 function filterQuotes() {
     const selectedCategory = document.getElementById("categoryFilter").value;
     const quoteDisplay = document.getElementById("quoteDisplay");
-    quoteDisplay.innerHTML = ""; // Clear current quotes
+    quoteDisplay.innerHTML = "";
 
     const filteredQuotes = selectedCategory === "all" ? quotes : quotes.filter(quote => quote.category === selectedCategory);
     filteredQuotes.forEach(quote => addQuoteToDOM(quote));
 
-    // Save the selected category to local storage
     localStorage.setItem('lastSelectedCategory', selectedCategory);
 }
 
@@ -108,7 +105,7 @@ function restoreLastSelectedCategory() {
     const lastSelectedCategory = localStorage.getItem('lastSelectedCategory');
     if (lastSelectedCategory) {
         document.getElementById("categoryFilter").value = lastSelectedCategory;
-        filterQuotes(); // Filter quotes based on the last selected category
+        filterQuotes();
     }
 }
 
@@ -119,12 +116,11 @@ function showRandomQuote() {
     const quoteDisplay = document.getElementById("quoteDisplay");
     quoteDisplay.innerHTML = `<strong>${quote.category}</strong>: "${quote.text}"`;
 
-    // Store last viewed quote in session storage
     sessionStorage.setItem('lastViewedQuote', JSON.stringify(quote));
 }
 
 // Function to add a new quote
-function addQuote() {
+async function addQuote() {
     const newQuoteText = document.getElementById("newQuoteText").value;
     const newQuoteCategory = document.getElementById("newQuoteCategory").value;
 
@@ -138,6 +134,9 @@ function addQuote() {
         // Save quotes to local storage
         saveQuotes();
 
+        // Post the new quote to the server
+        await postQuoteToServer(newQuote);
+
         // Populate categories
         populateCategories();
 
@@ -147,6 +146,32 @@ function addQuote() {
         alert("Quote added successfully!");
     } else {
         alert("Please fill in both fields.");
+    }
+}
+
+// Function to post a new quote to the mock server
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch(mockServerUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: quote.text, // Using title for the quote text
+                body: quote.category, // Using body for the category
+                userId: 1 // Mock user ID
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        console.log("Quote posted successfully:", data);
+    } catch (error) {
+        console.error("Error posting quote to server:", error);
     }
 }
 
@@ -179,9 +204,8 @@ function importFromJsonFile(event) {
         quotes.push(...importedQuotes);
         saveQuotes();
 
-        // Update the DOM with the imported quotes
         importedQuotes.forEach(quote => addQuoteToDOM(quote));
-        populateCategories(); // Update categories
+        populateCategories();
 
         alert('Quotes imported successfully!');
     };
@@ -194,4 +218,5 @@ loadQuotes();
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 document.querySelector("button[onclick='addQuote()']").addEventListener("click", addQuote);
 document.getElementById("exportQuotes").addEventListener("click", exportQuotes);
+
 
