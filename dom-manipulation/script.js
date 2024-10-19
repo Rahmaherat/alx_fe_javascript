@@ -1,7 +1,7 @@
 // Array to hold quotes
 let quotes = [];
 
-// Mock server endpoint (replace with your actual server logic if needed)
+// Mock server endpoint
 const mockServerUrl = "https://jsonplaceholder.typicode.com/posts";
 
 // Load quotes from local storage when the application initializes
@@ -15,7 +15,7 @@ function loadQuotes() {
     }
     populateCategories();
     restoreLastSelectedCategory();
-    fetchQuotesFromServer(); // Fetch initial quotes from the server
+    syncQuotes(); // Start syncing with the server
 }
 
 // Function to save quotes to local storage
@@ -66,8 +66,42 @@ function refreshQuoteDisplay() {
     quotes.forEach(quote => addQuoteToDOM(quote));
 }
 
-// Periodic fetch every 10 seconds
-setInterval(fetchQuotesFromServer, 10000);
+// Function to synchronize quotes with the server
+async function syncQuotes() {
+    await fetchQuotesFromServer(); // Fetch existing quotes from the server
+    setInterval(async () => {
+        await fetchQuotesFromServer(); // Periodically fetch new quotes
+        await postNewQuotes(); // Check and post new quotes to the server
+    }, 10000); // Sync every 10 seconds
+}
+
+// Function to post new quotes to the server
+async function postNewQuotes() {
+    for (const quote of quotes) {
+        try {
+            const response = await fetch(mockServerUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: quote.text,
+                    body: quote.category,
+                    userId: 1 // Mock user ID
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            const data = await response.json();
+            console.log("Quote posted successfully:", data);
+        } catch (error) {
+            console.error("Error posting quote to server:", error);
+        }
+    }
+}
 
 // Populate categories dynamically in the dropdown
 function populateCategories() {
@@ -158,8 +192,8 @@ async function postQuoteToServer(quote) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                title: quote.text, // Using title for the quote text
-                body: quote.category, // Using body for the category
+                title: quote.text,
+                body: quote.category,
                 userId: 1 // Mock user ID
             })
         });
@@ -218,5 +252,6 @@ loadQuotes();
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 document.querySelector("button[onclick='addQuote()']").addEventListener("click", addQuote);
 document.getElementById("exportQuotes").addEventListener("click", exportQuotes);
+
 
 
