@@ -72,6 +72,7 @@ async function syncQuotes() {
     setInterval(async () => {
         await fetchQuotesFromServer(); // Periodically fetch new quotes
         await postNewQuotes(); // Check and post new quotes to the server
+        console.log("Quotes synced with server!"); // Log message for successful sync
     }, 10000); // Sync every 10 seconds
 }
 
@@ -252,6 +253,7 @@ loadQuotes();
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 document.querySelector("button[onclick='addQuote()']").addEventListener("click", addQuote);
 document.getElementById("exportQuotes").addEventListener("click", exportQuotes);
+
 
 
 
