@@ -10,11 +10,48 @@ function loadQuotes() {
             addQuoteToDOM(quote);
         });
     }
+    populateCategories();
+    restoreLastSelectedCategory();
 }
 
 // Function to save quotes to local storage
 function saveQuotes() {
     localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+// Populate categories dynamically in the dropdown
+function populateCategories() {
+    const categoryFilter = document.getElementById("categoryFilter");
+    const categories = new Set(quotes.map(quote => quote.category));
+
+    categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+}
+
+// Filter quotes based on selected category
+function filterQuotes() {
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    quoteDisplay.innerHTML = ""; // Clear current quotes
+
+    const filteredQuotes = selectedCategory === "all" ? quotes : quotes.filter(quote => quote.category === selectedCategory);
+    filteredQuotes.forEach(quote => addQuoteToDOM(quote));
+
+    // Save the selected category to local storage
+    localStorage.setItem('lastSelectedCategory', selectedCategory);
+}
+
+// Restore the last selected category from local storage
+function restoreLastSelectedCategory() {
+    const lastSelectedCategory = localStorage.getItem('lastSelectedCategory');
+    if (lastSelectedCategory) {
+        document.getElementById("categoryFilter").value = lastSelectedCategory;
+        filterQuotes(); // Filter quotes based on the last selected category
+    }
 }
 
 // Function to show a random quote
@@ -43,6 +80,9 @@ function addQuote() {
         // Save quotes to local storage
         saveQuotes();
         
+        // Populate categories
+        populateCategories();
+
         // Clear input fields
         document.getElementById("newQuoteText").value = '';
         document.getElementById("newQuoteCategory").value = '';
@@ -83,10 +123,10 @@ function importFromJsonFile(event) {
         
         // Update the DOM with the imported quotes
         importedQuotes.forEach(quote => addQuoteToDOM(quote));
+        populateCategories(); // Update categories
         
         alert('Quotes imported successfully!');
     };
-    fileReader.readAsText(event.target.files[0]);
 }
 
 // Load quotes on initial page load
