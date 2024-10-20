@@ -233,7 +233,7 @@ function exportQuotes() {
 
 // Function to import quotes from JSON file
 function importFromJsonFile(event) {
-    const fileReader = new FileReader();
+    const fileReader = new FileReader(readAsText);
     fileReader.onload = function(event) {
         const importedQuotes = JSON.parse(event.target.result);
         quotes.push(...importedQuotes);
