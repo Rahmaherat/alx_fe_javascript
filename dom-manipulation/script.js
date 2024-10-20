@@ -19,7 +19,7 @@ function loadQuotes() {
 }
 
 // Function to save quotes to local storage
-function saveQuotes() {
+function saveQuotes(createAddQuoteForm) {
     localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
